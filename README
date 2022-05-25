@@ -1,0 +1,13 @@
+Data and code for the paper "Data-Driven Conditional Robust Optimization" 
+
+Structure:
+- code: there are three sub-folders:
+-- generator: a python file used to generate random data
+-- solver: optimization code, takes trained parameters as input
+-- train_nn: code to train nn in combination with the conditional Deep SVDD code 
+
+- scripts: shell scripts used to run experiments, which in particular give parameter choices
+--log: logs from all the runs get saved here
+
+-path: the models generated from the training get saved here
+-- data: the data used for portfolio optimization is generated and saved here when the shell scripts are run.
