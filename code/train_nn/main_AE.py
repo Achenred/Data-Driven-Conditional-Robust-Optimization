@@ -159,21 +159,21 @@ def main(dataset_name, net_name, xp_path, data_path, test_path,load_config, load
     from k_means_constrained import KMeansConstrained
     
     X = dataset.train_set.side_train_set
-    if cfg.settings['n_clusters']==0:
-        sil_score_max = -1 #this is the minimum possible score
-        best_n_clusters = 0
-        for n_clusters in range(2,5):
-          clf = KMeansConstrained(n_clusters=n_clusters, size_min=100, random_state=0)
-          clf.fit_predict(np.array(X))
-          labels = clf.labels_
-          sil_score = silhouette_score(X, labels)
-          if sil_score > sil_score_max:
-            sil_score_max = sil_score
-            best_n_clusters = n_clusters
+    # if cfg.settings['n_clusters']==0:
+    #     sil_score_max = -1 #this is the minimum possible score
+    #     best_n_clusters = 0
+    #     for n_clusters in range(2,5):
+    #       clf = KMeansConstrained(n_clusters=n_clusters, size_min=100, random_state=0)
+    #       clf.fit_predict(np.array(X))
+    #       labels = clf.labels_
+    #       sil_score = silhouette_score(X, labels)
+    #       if sil_score > sil_score_max:
+    #         sil_score_max = sil_score
+    #         best_n_clusters = n_clusters
 
-        n_clusters=best_n_clusters
-    else:
-        n_clusters=cfg.settings['n_clusters']
+    #     n_clusters=best_n_clusters
+    # else:
+    n_clusters=cfg.settings['n_clusters']
 
     # Initialize DeepSVDD model and set neural network \phi
     deep_SVDD = DeepSVDD(cfg.settings['objective'],n_clusters, cfg.settings['beta'], cfg.settings['alpha'],cfg.settings['nu'])
