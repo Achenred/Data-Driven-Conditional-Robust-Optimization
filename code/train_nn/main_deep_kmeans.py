@@ -24,7 +24,7 @@ import os, shutil
 # Settings
 ################################################################################
 @click.command()
-@click.argument('dataset_name', type=click.Choice([ 'mine','portfolio']))
+@click.argument('dataset_name', type=click.Choice(['mnist', 'cifar10', 'mine','portfolio']))
 @click.argument('net_name', type=click.Choice(['deep_kmeans_AE','port_soft_assign_AE1','port_soft_assign_AE2','port_soft_assign_AE3','port_soft_assign_AE','port_soft_assign','soft_assign','soft_assign_AE1','soft_assign_AE2','soft_assign_AE3','mnist_LeNet', 'cifar10_LeNet', 'cifar10_LeNet_ELU', 'mine_net2', 'mine_net3', 'mine_net4', 'mine_net5', 'mine_sp','mine_gen']))
 @click.argument('xp_path', type=click.Path(exists=True))
 @click.argument('data_path', type=click.Path(exists=True))
@@ -191,30 +191,21 @@ def main(dataset_name, net_name, xp_path, data_path, test_path,load_config, load
     logger.info('Training learning rate scheduler milestones: %s' % (cfg.settings['lr_milestone'],))
     logger.info('Training batch size: %d' % cfg.settings['batch_size'])
     logger.info('Training weight decay: %g' % cfg.settings['weight_decay'])
+
+    
+
     
     # Train model on dataset
+    # logger.info(assignments)
+    centroids = Variable(k_means_AE.centroid_init(dataset,n_classes, out_dim).data)
+    # logger.info(centroids)
+    for _ in range(5):
+        centroids, assignments = k_means_AE.train(dataset,centroids)
+        # logger.info(centroids)
+        # logger.info(torch.sum(assignments,axis=0))
+    logger.info(assignments)
+    list_1=assignments
     
-    from sklearn.cluster import KMeans
-    from sklearn.metrics import silhouette_score
-    from k_means_constrained import KMeansConstrained
-    X = dataset.train_set.side_train_set
-    sil_score_max = -1 #this is the minimum possible score
-    best_n_clusters = 0
-    for n_clusters in range(2,5):
-        clf = KMeansConstrained(n_clusters=n_clusters, size_min=100, random_state=0)
-        clf.fit_predict(np.array(X))
-        labels = clf.labels_
-
-        sil_score = silhouette_score(X, labels)
-        if sil_score > sil_score_max:
-          sil_score_max = sil_score
-          best_n_clusters = n_clusters
-    n_classes=best_n_clusters
-    trainloader, _ = dataset.loaders(batch_size=2000)
-    for data in trainloader:
-        side,_,_=data
-        kmeans = KMeans(n_clusters=n_classes,max_iter = 10, random_state=0).fit(side.detach().numpy())
-    list_1=kmeans.labels_
     result= r'path/deepK/'+dataset_name+'_'+net_name+'_alpha'+str(alpha)+'/'
     os.makedirs(result, exist_ok=True)
     for filename in os.listdir(result):
@@ -241,7 +232,11 @@ def main(dataset_name, net_name, xp_path, data_path, test_path,load_config, load
                     weight_decay=cfg.settings['weight_decay'],
                     device=device,
                     n_jobs_dataloader=n_jobs_dataloader)
+        # logger.info(deep_SVDD.trainer.assignment.numpy())
 
+        # logger.info(itertools.islice(deep_SVDD.net_main.state_dict(), 2))
+        
+        
         #normalize
         n_samples = 0
         c = torch.zeros(deep_SVDD.net_main.rep_dim,device=device)
